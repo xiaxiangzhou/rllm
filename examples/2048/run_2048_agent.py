@@ -3,8 +3,10 @@ import os
 
 from transformers import AutoTokenizer
 
+from rllm.agents.game_2048_agent import Game2048Agent
 from rllm.data.dataset import DatasetRegistry
 from rllm.engine.agent_execution_engine import AgentExecutionEngine
+from rllm.environments.game_2048.game_2048 import Game2048Env
 from rllm.utils import compute_pass_at_k
 
 
@@ -17,17 +19,12 @@ def load_2048_data():
     print("2048 datasets not found. Preparing datasets...")
     from prepare_2048_data import prepare_2048_data
 
-    # Use default target_value=128 for easier games
-    train_dataset, test_dataset = prepare_2048_data(target_value=128)
+    train_dataset, test_dataset = prepare_2048_data()
 
     return test_dataset.get_data()
 
 
 if __name__ == "__main__":
-    # Import here to avoid circular dependencies
-    from rllm.agents.game_2048_agent import Game2048Agent
-    from rllm.environments.game_2048.game_2048 import Game2048Env
-
     os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
     # Configuration

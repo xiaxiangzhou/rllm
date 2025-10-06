@@ -1,27 +1,77 @@
 #!/bin/bash
+set -x
 
-# Train a 2048 agent using GRPO
-# This script uses the default PPO trainer configuration with GRPO algorithm
+# Environment exports for vLLM/veRL
+export VLLM_ATTENTION_BACKEND=FLASH_ATTN
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:False"
+export VLLM_USE_V1=1
+export VLLM_ALLOW_LONG_MAX_MODEL_LEN=1
+export VLLM_ENGINE_ITERATION_TIMEOUT_S=100000000000
 
-python examples/2048/train_2048_agent.py \
-    --config-name ppo_trainer \
-    trainer=grpo \
-    trainer.model_name_or_path=Qwen/Qwen2.5-3B-Instruct \
-    trainer.output_dir=outputs/2048_agent \
-    trainer.num_train_epochs=3 \
-    trainer.per_device_train_batch_size=2 \
-    trainer.per_device_eval_batch_size=4 \
-    trainer.gradient_accumulation_steps=8 \
-    trainer.learning_rate=1e-5 \
-    trainer.warmup_ratio=0.1 \
-    trainer.logging_steps=10 \
-    trainer.save_steps=100 \
-    trainer.eval_steps=100 \
-    trainer.save_total_limit=3 \
-    trainer.bf16=true \
-    trainer.gradient_checkpointing=true \
-    trainer.ddp_find_unused_parameters=false \
+# Find the directory where rllm package is located
+RLLM_DIR=$(python3 -c "import rllm; import os; print(os.path.dirname(os.path.dirname(rllm.__file__)))")
+
+python3 -m examples.2048.train_2048_agent \
+    algorithm.adv_estimator=grpo \
+    data.train_batch_size=8 \
+    data.val_batch_size=16 \
+    data.max_prompt_length=4096 \
+    data.max_response_length=2048 \
+    actor_rollout_ref.model.path=Qwen/Qwen2.5-3B-Instruct \
+    actor_rollout_ref.hybrid_engine=True \
+    actor_rollout_ref.actor.optim.lr=1e-6 \
+    actor_rollout_ref.model.use_remove_padding=True \
+    actor_rollout_ref.actor.loss_agg_mode=seq-mean-token-sum \
+    actor_rollout_ref.actor.ppo_mini_batch_size=8 \
+    actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=2 \
+    actor_rollout_ref.actor.use_dynamic_bsz=True \
+    actor_rollout_ref.actor.ppo_max_token_len_per_gpu=24000 \
+    actor_rollout_ref.actor.use_kl_loss=False \
+    actor_rollout_ref.actor.clip_ratio_high=0.28 \
+    actor_rollout_ref.actor.kl_loss_coef=0.001 \
+    actor_rollout_ref.actor.kl_loss_type=low_var_kl \
+    actor_rollout_ref.actor.ulysses_sequence_parallel_size=1 \
+    actor_rollout_ref.actor.grad_norm_threshold=10 \
+    actor_rollout_ref.model.enable_gradient_checkpointing=True \
+    actor_rollout_ref.actor.fsdp_config.param_offload=True \
+    actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \
+    actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
+    actor_rollout_ref.rollout.name=vllm \
+    actor_rollout_ref.rollout.mode="async" \
+    actor_rollout_ref.rollout.chat_scheduler=verl.schedulers.completions_scheduler.CompletionsScheduler \
+    actor_rollout_ref.rollout.enforce_eager=False \
+    actor_rollout_ref.rollout.temperature=0.7 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.85 \
+    actor_rollout_ref.rollout.n=4 \
+    actor_rollout_ref.rollout.val_kwargs.n=2 \
+    actor_rollout_ref.rollout.val_kwargs.temperature=0.7 \
+    actor_rollout_ref.rollout.val_kwargs.top_p=0.8 \
+    actor_rollout_ref.rollout.val_kwargs.top_k=20 \
+    actor_rollout_ref.ref.fsdp_config.param_offload=True \
+    actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=1 \
+    actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1 \
+    actor_rollout_ref.actor.entropy_coeff=0 \
+    algorithm.kl_ctrl.kl_coef=0.001 \
+    algorithm.mask_truncated_samples=False \
+    algorithm.clip_advantages=False \
+    trainer.critic_warmup=0 \
+    trainer.logger=['console','wandb'] \
+    trainer.project_name='rllm-agent' \
+    trainer.experiment_name='3b-2048_agent' \
+    trainer.val_before_train=False \
+    trainer.n_gpus_per_node=1 \
+    trainer.nnodes=1 \
+    trainer.save_freq=40 \
+    trainer.test_freq=10 \
+    trainer.default_hdfs_dir=null \
+    trainer.rejection_sample=True \
+    trainer.rejection_sample_multiplier=2 \
     +env.env_args.max_steps=100 \
+    agent.max_steps=100 \
+    agent.async_engine=True \
+    agent.use_stepwise_advantage=False \
+    +agent.engine_args.disable_thinking=False \
     +agent.agent_args.max_steps=100 \
-    +agent.agent_args.use_accumulate_history=True
+    +agent.agent_args.use_accumulate_history=True \
+    trainer.total_epochs=1
 
