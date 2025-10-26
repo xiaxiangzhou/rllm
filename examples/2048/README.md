@@ -4,7 +4,7 @@ This directory contains examples for training and running 2048 game agents using
 
 Our examples use the following:
 * Qwen/Qwen2.5-3B-Instruct as the base model
-* Custom 2048 game environment with 4x4 board
+* gym-2048 package for game logic with custom wrapper
 * GRPO (Group Relative Policy Optimization) for training
 * Reward structure matching the ART framework
 
@@ -30,8 +30,30 @@ Our examples use the following:
 - `prepare_2048_data.py`: Prepares training and test datasets with random seeds
 - `train_2048_agent.py`: Main training script using AgentTrainer
 - `train_2048_agent.sh`: Bash script with training configuration (includes env_args)
-- `run_2048_agent.py`: Inference script using AgentExecutionEngine
-- `utils.py`: Core game logic (`GameBoard` class, move application, game rules)
+- `run_2048_agent.py`: Inference script using AgentExecutionEngine (GPU-optimized)
+- `run_2048_agent_cpu.py`: CPU-optimized inference script with smaller model
+- `test_gym_2048_integration.py`: Test script to verify gym-2048 integration works correctly
+
+## Installation
+
+This example requires the gym-2048 package. Install it with:
+
+```bash
+pip install gym-2048
+```
+
+Or install rLLM with all dependencies:
+
+```bash
+pip install -e .
+```
+
+To verify the installation:
+
+```bash
+cd examples/2048
+python test_gym_2048_integration.py
+```
 
 ## Model Hosting
 
@@ -196,11 +218,11 @@ These apply to all games and are set via `env_args`:
 - `train_2048_agent.py` - Hydra-based training with AgentTrainer
 - `train_2048_agent.sh` - Shell script with GRPO configuration
 - `run_2048_agent.py` - Parallel inference with AgentExecutionEngine
-- `utils.py` - Core game logic (GameBoard class, move application, etc.)
+- `test_gym_2048_integration.py` - Test script for gym-2048 integration
 
 **Core Components** (`rllm/rllm/`):
 - `agents/game_2048_agent.py` - Agent with chat interface and action parsing
-- `environments/game_2048/game_2048.py` - Gym environment wrapper
+- `environments/game_2048/game_2048.py` - Wrapper around gym-2048 with custom reward structure
 
 ### Agent Structure
 
@@ -222,7 +244,11 @@ The `Game2048Agent` (`rllm/rllm/agents/game_2048_agent.py`) implements:
 ### Environment Structure
 
 The `Game2048Env` (`rllm/rllm/environments/game_2048/game_2048.py`) provides:
-- **Game Logic**: Imports and uses `GameBoard` class from `utils.py` as single source of truth
+- **Game Logic**: Uses the gym-2048 package for game mechanics
+- **Wrapper Features**:
+  - Converts string actions ("left", "right", "up", "down") to gym-2048 integer actions (0, 1, 2, 3)
+  - Formats numpy board arrays as human-readable strings for LLM agents
+  - Implements custom reward calculation (overriding gym-2048's default)
 - **Gym Interface**:
   - `reset()`: Creates new game with seeded RNG, returns initial board observation
   - `step(action)`: Applies move, adds random tile (if board changed), calculates reward
