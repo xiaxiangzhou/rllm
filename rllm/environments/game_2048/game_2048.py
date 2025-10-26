@@ -151,15 +151,18 @@ class Game2048Env(BaseEnv):
         """
         # gym-2048 uses 0 for empty cells, we'll display as "."
         # Find max width for alignment
-        max_val = board.max()
+        max_val = int(board.max())
         max_width = len(str(max_val)) if max_val > 0 else 1
         
         lines = []
         for row in board:
-            cells = [
-                str(int(val)).rjust(max_width) if val > 0 else ".".rjust(max_width)
-                for val in row
-            ]
+            cells = []
+            for val in row:
+                val_int = int(val)
+                if val_int > 0:
+                    cells.append(str(val_int).rjust(max_width))
+                else:
+                    cells.append(".".rjust(max_width))
             lines.append(" | ".join(cells))
         
         return "\n".join(lines)
