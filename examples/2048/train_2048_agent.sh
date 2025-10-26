@@ -60,8 +60,6 @@ python3 -m examples.2048.train_2048_agent \
     trainer.save_freq=40 \
     trainer.test_freq=10 \
     trainer.default_hdfs_dir=null \
-    trainer.rejection_sample=True \
-    trainer.rejection_sample_multiplier=2 \
     +env.env_args.max_steps=100 \
     agent.max_steps=100 \
     agent.async_engine=True \
