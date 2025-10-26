@@ -25,7 +25,7 @@ python3 -m examples.2048.train_2048_agent \
     actor_rollout_ref.actor.ppo_mini_batch_size=1 \
     actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=1 \
     actor_rollout_ref.actor.use_dynamic_bsz=True \
-    actor_rollout_ref.actor.ppo_max_token_len_per_gpu=12000 \
+    actor_rollout_ref.actor.ppo_max_token_len_per_gpu=6000 \
     actor_rollout_ref.actor.use_kl_loss=False \
     actor_rollout_ref.actor.clip_ratio_high=0.28 \
     actor_rollout_ref.actor.kl_loss_coef=0.001 \
@@ -37,10 +37,10 @@ python3 -m examples.2048.train_2048_agent \
     actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
     actor_rollout_ref.rollout.name=vllm \
     actor_rollout_ref.rollout.mode="async" \
-    actor_rollout_ref.rollout.enforce_eager=True \
+    actor_rollout_ref.rollout.enforce_eager=False \
     actor_rollout_ref.rollout.temperature=0.7 \
-    actor_rollout_ref.rollout.gpu_memory_utilization=0.3 \
-    actor_rollout_ref.rollout.n=2 \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.2 \
+    actor_rollout_ref.rollout.n=1 \
     actor_rollout_ref.rollout.val_kwargs.n=2 \
     actor_rollout_ref.rollout.val_kwargs.temperature=0.7 \
     actor_rollout_ref.rollout.val_kwargs.top_p=0.8 \
