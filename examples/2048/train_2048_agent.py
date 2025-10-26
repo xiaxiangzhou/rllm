@@ -5,7 +5,7 @@ from rllm.trainer.agent_trainer import AgentTrainer
 
 
 @hydra.main(
-    config_path="pkg://rllm.trainer.config", config_name="ppo_trainer", version_base=None
+    config_path="pkg://rllm.trainer.config", config_name="agent_ppo_trainer", version_base=None
 )
 def main(config):
     # Import here to avoid circular dependencies
