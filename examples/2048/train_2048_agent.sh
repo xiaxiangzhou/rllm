@@ -61,9 +61,9 @@ python3 -m examples.2048.train_2048_agent \
     trainer.test_freq=10 \
     trainer.default_hdfs_dir=null \
     +env.env_args.max_steps=100 \
-    agent.max_steps=100 \
-    agent.async_engine=True \
-    agent.use_stepwise_advantage=False \
+    +agent.max_steps=100 \
+    +agent.async_engine=True \
+    +agent.use_stepwise_advantage=False \
     +agent.engine_args.disable_thinking=False \
     +agent.agent_args.max_steps=100 \
     +agent.agent_args.use_accumulate_history=True \
