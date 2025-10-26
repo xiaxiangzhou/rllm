@@ -50,7 +50,6 @@ python3 -m examples.2048.train_2048_agent \
     actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1 \
     actor_rollout_ref.actor.entropy_coeff=0 \
     algorithm.kl_ctrl.kl_coef=0.001 \
-    algorithm.mask_truncated_samples=False \
     algorithm.clip_advantages=False \
     trainer.critic_warmup=0 \
     trainer.logger=['console','wandb'] \
