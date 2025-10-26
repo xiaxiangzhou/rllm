@@ -63,6 +63,7 @@ dependencies = [
     "gdown",
     "together>=1.4",
     "wandb",
+    "gym",
     "gymnasium",
     "gym-2048",
     "click",
